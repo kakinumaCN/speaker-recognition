@@ -14,6 +14,8 @@ from sklearn.mixture import GMM
 from sklearn.mixture import GaussianMixture
 from sklearn import preprocessing
 
+import codecs
+import json
 # import tkinter.filedialog as tf
 correctrate=float()
 
@@ -73,6 +75,9 @@ def test_GMM_N(file_list, model_path, dtype):
     # print 'file_list'+file_list
     result = []
     acc = 0
+    reportFile = codecs.open('gmm_report.json', 'w', 'utf-8')
+    reportJson = {}
+    resultList = []
     for file in file_list:
         # print file
         f = wave.open(file, 'rb')
@@ -85,21 +90,43 @@ def test_GMM_N(file_list, model_path, dtype):
             log_likelihood[i] = scores.sum()
         # print (gmm_files[np.argmax(log_likelihood)])
         # print log_likelihood
-        print file.split('/')[len(file.split('/'))-1].split('.')[0]
-        print gmm_files
-        print gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]
+        # print file.split('/')[len(file.split('/'))-1].split('.')[0]
+        # print gmm_files
+        # print gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]
         # if file.split('/')[len(file.split('/'))-1].split('.')[0] == gmm_files[np.argmax(log_likelihood)].split('/')[2].split('.')[0]:
         if file.split('/')[len(file.split('/'))-1].split('.')[0] ==gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]:
 #if 当前文件名 == 测试结果文件名
             acc += 1
             # print acc
         else:
-            print gmm_files[np.argmax(log_likelihood)]
+            pass
+        print log_likelihood
+        print log_likelihood[np.argmax(log_likelihood)]
+        print np.argmax(log_likelihood)
+        print gmm_files[np.argmax(log_likelihood)]
 #     acc = 0
 #     for i in range(len(file_list)):
 #         # print (file_list[i],result[i])
 #         if file_list[i].split('/')[2].split('.')[0] == result[i].split('/')[2].split('.')[0]:
 #             acc += 1
+        fileJson = {}
+        
+        # 10.30 20:00
+        fileJson['testFilename'] = file
+        fileJson['modelList'] = gmm_files
+        loglike = []
+        for log in log_likelihood:
+            loglike.append(log)
+        fileJson['likelihoodList'] = loglike
+
+        # fileJson['max'] = log_likelihood[np.argmax(log_likelihood)]
+
+        resultList.append(fileJson)
+        # print fileJson
+    reportJson['resultList'] = resultList
+    json.dump(reportJson,reportFile)
+    print reportJson
+
     print '正确个数'+str(acc)
     print len(file_list)
     correctrate=float(acc)/float(len(file_list))*100
@@ -114,6 +141,8 @@ def test_GMM_N(file_list, model_path, dtype):
         flag_temp=''
         original_e.set(original_temp)
         flag_e.set(flag_temp)
+    
+    
 
 
 # GUI
