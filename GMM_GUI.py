@@ -9,6 +9,7 @@ else:
     import pickle
 import wave
 import numpy as np
+np.set_printoptions(threshold=np.inf)
 from python_speech_features import mfcc
 from sklearn.mixture import GMM
 from sklearn.mixture import GaussianMixture
@@ -16,6 +17,7 @@ from sklearn import preprocessing
 
 import codecs
 import json
+import math
 # import tkinter.filedialog as tf
 correctrate=float()
 
@@ -54,6 +56,7 @@ def train_GMM_N(speaker_list, model_path, dtype):
         audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
     #    print audio
         feature = get_MFCC(frame_rate, audio)
+        print feature
         if train_mfcc_features[i].size == 0:
             train_mfcc_features[i] = feature
         else:
@@ -65,6 +68,146 @@ def train_GMM_N(speaker_list, model_path, dtype):
         print speaker_list[i].split('/')[len(speaker_list[i].split('/'))-1].split('.')[0]
         pickle.dump(speaker_gmm[i], open(os.path.join(model_path, speaker_list[i].split('/')[len(speaker_list[i].split('/'))-1].split('.')[0]+'.gmm'), 'w'))    
 
+def test_GMM_N_p(file_list, model_path, dtype):
+    gmm_files = []
+    for f in os.listdir(model_path):
+        if f.endswith('.gmm'):
+            gmm_files.append(model_path+'/'+f)
+    models = [pickle.load(open(f, 'r')) for f in gmm_files]
+    # file_list = [os.path.join(data_path, f) for f in os.listdir(data_path) if f.endswith('.wav')]
+    # print 'file_list'+file_list
+    result = []
+    acc = 0
+    # reportJson = {}
+    # resultList = []
+    for file in file_list:
+        # print file
+        f = wave.open(file, 'rb')
+        frame_rate, n_frames = f.getframerate(), f.getnframes()
+        audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
+        feature = get_MFCC(frame_rate, audio)
+        log_likelihood = np.zeros(len(models))
+
+        if True:
+            # 11.1
+            # reportFile = codecs.open(file.split('/')[len(file.split('/'))-1].split('.')[0]+'_report.json', 'w', 'utf-8')
+            # fileJson = {}
+            # 10.30 20:00
+            # fileJson['testFilename'] = file
+            # fileJson['pwiList'] = []
+            # loglike = []
+            # for log in log_likelihood:
+            #     loglike.append(log)
+            # fileJson['likelihoodList'] = loglike
+            
+
+            for i in range(len(models)):
+                #11.1
+                # scores = np.array(models[i].score(feature))
+                # log_likelihood[i] = scores.sum()
+
+                # print models[i].score_samples(feature)
+                print 'sum:'
+                # print models[i]._estimate_weighted_log_prob(feature)
+                # print 'log-prob:'
+                # print models[i]._estimate_log_prob(feature)
+                # print 'log-weight:'
+                # print models[i]._estimate_log_weights()
+                pwilist = []
+                # for m in range(len(models[i]._estimate_weighted_log_prob(feature))):
+
+                for m in range(0,500):
+                    # print m
+                    #each sample
+                    pwi = 0
+                    # print models[i]._estimate_weighted_log_prob(feature)[m]
+                    for n in range(0,len(models[i]._estimate_weighted_log_prob(feature)[m])):
+                        #each component
+                        if models[i]._estimate_weighted_log_prob(feature)[m][n] > -9:
+                             pwi += math.exp(models[i]._estimate_weighted_log_prob(feature)[m][n])
+                        else :
+                            pass
+                    pwilist.append(pwi)
+                print gmm_files[i]
+                print pwilist[np.argmax(pwilist)]
+                # fileJson['pwiList'].append(pwilist[np.argmax(pwilist)])
+                
+                    # print 'pwi is ' + str(pwi)
+            # fileJson['bestPwiList'] = []
+            # fileJson['bestMatchFileList'] = []
+
+            # fileJson['bestPwiList'].append(fileJson['pwiList'][np.argmax(fileJson['pwiList'])])
+            # fileJson['bestMatchFileList'].append(gmm_files[np.argmax(fileJson['pwiList'])])
+
+            # fileJson['pwiList'][np.argmax(fileJson['pwiList'])] = -1
+            # fileJson['bestPwiList'].append(fileJson['pwiList'][np.argmax(fileJson['pwiList'])])
+            # fileJson['bestMatchFileList'].append(gmm_files[np.argmax(fileJson['pwiList'])])
+
+            # fileJson.pop('pwiList')
+            # json.dump(fileJson,reportFile)
+
+
+        # fileJson['pwi'] = pwilist[np.argmax(pwilist)]
+        # pwilist[np.argmax(pwilist)] = -1
+        # fileJson['pwiFile'] = gmm_files[np.argmax(pwilist)]
+        # fileJson['pwiSecond'] = pwilist[np.argmax(pwilist)]
+        # fileJson['pwiSecondFile'] = pwilist[np.argmax(pwilist)]
+            
+
+            
+
+            # a,b = models[i]._estimate_log_prob_resp(feature)
+            # print a
+            # print b
+            
+            # print models[i].predict_proba(feature)
+        # print (gmm_files[np.argmax(log_likelihood)])
+        # print log_likelihood
+        # print file.split('/')[len(file.split('/'))-1].split('.')[0]
+        # print gmm_files
+        # print gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]
+        # if file.split('/')[len(file.split('/'))-1].split('.')[0] == gmm_files[np.argmax(log_likelihood)].split('/')[2].split('.')[0]:
+        if file.split('/')[len(file.split('/'))-1].split('.')[0] ==gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]:
+    #if 当前文件名 == 测试结果文件名
+            acc += 1
+            # print acc
+        else:
+            pass
+        # print log_likelihood
+        # print log_likelihood[np.argmax(log_likelihood)]
+        # print np.argmax(log_likelihood)
+        # print gmm_files[np.argmax(log_likelihood)]
+    # acc = 0
+    # for i in range(len(file_list)):
+    #     # print (file_list[i],result[i])
+    #     if file_list[i].split('/')[2].split('.')[0] == result[i].split('/')[2].split('.')[0]:
+    #         acc += 1
+        
+
+        # if file.split('/')[len(file.split('/'))-1].split('.')[0] ==gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]:
+        #     fileJson['max'] = log_likelihood[np.argmax(log_likelihood)]
+
+        # resultList.append(fileJson)
+        # print fileJson
+    # reportJson['resultList'] = resultList
+    # json.dump(reportJson,reportFile)
+    # print reportJson
+
+    print '正确个数'+str(acc)
+    print len(file_list)
+    correctrate=float(acc)/float(len(file_list))*100
+    print correctrate
+    e.set(str(correctrate))
+    # print '正确率'+int(acc)/len(file_list)  #正确个数/总个数
+    if len(file_list) ==1:
+        original_e.set(file.split('/')[len(file.split('/'))-1].split('.')[0])
+        flag_e.set(gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0])
+    else:
+        original_temp=''
+        flag_temp=''
+        original_e.set(original_temp)
+        flag_e.set(flag_temp)
+    
 def test_GMM_N(file_list, model_path, dtype):
     gmm_files = []
     for f in os.listdir(model_path):
@@ -95,20 +238,20 @@ def test_GMM_N(file_list, model_path, dtype):
         # print gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]
         # if file.split('/')[len(file.split('/'))-1].split('.')[0] == gmm_files[np.argmax(log_likelihood)].split('/')[2].split('.')[0]:
         if file.split('/')[len(file.split('/'))-1].split('.')[0] ==gmm_files[np.argmax(log_likelihood)].split('/')[len(gmm_files[np.argmax(log_likelihood)].split('/'))-1].split('.')[0]:
-#if 当前文件名 == 测试结果文件名
+        #if 当前文件名 == 测试结果文件名
             acc += 1
             # print acc
         else:
             pass
-        print log_likelihood
-        print log_likelihood[np.argmax(log_likelihood)]
-        print np.argmax(log_likelihood)
-        print gmm_files[np.argmax(log_likelihood)]
-#     acc = 0
-#     for i in range(len(file_list)):
-#         # print (file_list[i],result[i])
-#         if file_list[i].split('/')[2].split('.')[0] == result[i].split('/')[2].split('.')[0]:
-#             acc += 1
+        # print log_likelihood
+        # print log_likelihood[np.argmax(log_likelihood)]
+        # print np.argmax(log_likelihood)
+        # print gmm_files[np.argmax(log_likelihood)]
+    # acc = 0
+    # for i in range(len(file_list)):
+    #     # print (file_list[i],result[i])
+    #     if file_list[i].split('/')[2].split('.')[0] == result[i].split('/')[2].split('.')[0]:
+    #         acc += 1
         fileJson = {}
         
         # 10.30 20:00
@@ -118,8 +261,60 @@ def test_GMM_N(file_list, model_path, dtype):
         for log in log_likelihood:
             loglike.append(log)
         fileJson['likelihoodList'] = loglike
+        loglikeArray = np.array(loglike)
+        minloglike = np.argsort(-loglikeArray)[0:3]
+        
+        print minloglike
 
-        # fileJson['max'] = log_likelihood[np.argmax(log_likelihood)]
+        arraya = []
+        arrayb = []
+        arrayc = []
+        for i in range(0,3):
+            print minloglike[i]
+            arraya.append(loglike[minloglike[i]])
+            arrayb.append(gmm_files[minloglike[i]])
+            arrayc.append(models[minloglike[i]])
+        fileJson['likelihoodList'] = arraya
+        fileJson['modelList'] = arrayb
+        # fileJson['likelihoodList'] =
+        # print nploglike[minloglike[0:5]]
+        # fileJson['modelList'] = gmm_files[minloglike]
+        arrayd = []
+        for i in range(len(arrayc)):
+                #11.1
+                # scores = np.array(models[i].score(feature))
+                # log_likelihood[i] = scores.sum()
+
+                # print models[i].score_samples(feature)
+                # print models[i]._estimate_weighted_log_prob(feature)
+                # print 'log-prob:'
+                # print models[i]._estimate_log_prob(feature)
+                # print 'log-weight:'
+                # print models[i]._estimate_log_weights()
+            pwilist = []
+            for m in range(500,1300): 
+            # for m in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature))):
+                # print m
+                #each sample
+                pwi = 0
+                # print models[i]._estimate_weighted_log_prob(feature)[m]
+                for n in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature)[m])):
+                    #each component
+                    if arrayc[i]._estimate_weighted_log_prob(feature)[m][n] > -9:
+                            pwi += math.exp(arrayc[i]._estimate_weighted_log_prob(feature)[m][n])
+                    else :
+                        pass
+                pwilist.append(pwi)
+            
+            print pwilist
+            pwilistArray = np.array(pwilist)
+            temppwilistArray = np.argsort(-pwilistArray)[0:10]
+            ad = 0
+            for i in range(0,10):
+                ad += pwilistArray[temppwilistArray[i]]
+            arrayd.append(ad/len(pwilist))
+        fileJson['pwiMatrix'] = arrayd
+
 
         resultList.append(fileJson)
         # print fileJson
@@ -140,9 +335,7 @@ def test_GMM_N(file_list, model_path, dtype):
         original_temp=''
         flag_temp=''
         original_e.set(original_temp)
-        flag_e.set(flag_temp)
-    
-    
+        flag_e.set(flag_temp)    
 
 
 # GUI
