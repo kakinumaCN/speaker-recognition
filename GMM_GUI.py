@@ -218,9 +218,9 @@ def test_GMM_N(file_list, model_path, dtype):
     # print 'file_list'+file_list
     result = []
     acc = 0
-    reportFile = codecs.open('gmm_report.json', 'w', 'utf-8')
     reportJson = {}
     resultList = []
+    reportJson['resultList'] = resultList
     for file in file_list:
         # print file
         f = wave.open(file, 'rb')
@@ -292,19 +292,48 @@ def test_GMM_N(file_list, model_path, dtype):
                 # print 'log-weight:'
                 # print models[i]._estimate_log_weights()
             pwilist = []
-            for m in range(500,1300): 
-            # for m in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature))):
-                # print m
-                #each sample
-                pwi = 0
-                # print models[i]._estimate_weighted_log_prob(feature)[m]
-                for n in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature)[m])):
-                    #each component
-                    if arrayc[i]._estimate_weighted_log_prob(feature)[m][n] > -9:
-                            pwi += math.exp(arrayc[i]._estimate_weighted_log_prob(feature)[m][n])
-                    else :
-                        pass
-                pwilist.append(pwi)
+            if len(arrayc[i]._estimate_weighted_log_prob(feature)) > 1300:
+                for m in range(500,1300): 
+                # for m in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature))):
+                    # print m
+                    #each sample
+                    pwi = 0
+                    # print models[i]._estimate_weighted_log_prob(feature)[m]
+                    for n in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature)[m])):
+                        #each component
+                        if arrayc[i]._estimate_weighted_log_prob(feature)[m][n] > -9:
+                                pwi += math.exp(arrayc[i]._estimate_weighted_log_prob(feature)[m][n])
+                        else :
+                            pass
+                    pwilist.append(pwi)
+            elif len(arrayc[i]._estimate_weighted_log_prob(feature)) > 800:
+                for m in range(0,800): 
+                # for m in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature))):
+                    # print m
+                    #each sample
+                    pwi = 0
+                    # print models[i]._estimate_weighted_log_prob(feature)[m]
+                    for n in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature)[m])):
+                        #each component
+                        if arrayc[i]._estimate_weighted_log_prob(feature)[m][n] > -9:
+                                pwi += math.exp(arrayc[i]._estimate_weighted_log_prob(feature)[m][n])
+                        else :
+                            pass
+                    pwilist.append(pwi)
+            else:
+                for m in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature))): 
+                # for m in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature))):
+                    # print m
+                    #each sample
+                    pwi = 0
+                    # print models[i]._estimate_weighted_log_prob(feature)[m]
+                    for n in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature)[m])):
+                        #each component
+                        if arrayc[i]._estimate_weighted_log_prob(feature)[m][n] > -9:
+                                pwi += math.exp(arrayc[i]._estimate_weighted_log_prob(feature)[m][n])
+                        else :
+                            pass
+                    pwilist.append(pwi)
             
             print pwilist
             pwilistArray = np.array(pwilist)
@@ -317,10 +346,12 @@ def test_GMM_N(file_list, model_path, dtype):
 
 
         resultList.append(fileJson)
+        reportFile = codecs.open('gmm_report.json', 'w', 'utf-8')
+        json.dump(reportJson,reportFile)
+        print 'update json file'
         # print fileJson
-    reportJson['resultList'] = resultList
-    json.dump(reportJson,reportFile)
-    print reportJson
+    # json.dump(reportJson,reportFile)
+        print reportJson
 
     print '正确个数'+str(acc)
     print len(file_list)
@@ -368,14 +399,16 @@ def selectPath1():
     # print train_list
     path = tkFileDialog.askopenfilenames()
     path1.set(path)
-    train_path = path1.get().replace('u\'','').replace('\'','')
     global train_list
-    train_path = train_path[1:-1]
-    train_list = train_path.split(', ')
-    if len(train_list) == 1:
-        temp = train_list[0]
-        temp = temp[0:-1]
-        train_list[0] = temp
+        train_path = path1.get().replace('u\'','').replace('\'','')
+        train_path = train_path[1:-1]
+        train_list = train_path.split(', ')
+        if len(train_list) == 1:
+            temp = train_list[0]
+            temp = temp[0:-1]
+            train_list[0] = temp
+    else:
+        train_list = str(path).split(' ')
     tkMessageBox.showinfo(title='提示框', message='训练文件选择完成')
     # for i in range(0,len(train_list)):
     #     if i < len(train_list) or i ==len(train_list):
@@ -386,14 +419,17 @@ def selectPath1():
 def selectPath2():
     path = tkFileDialog.askopenfilenames()
     path2.set(path)
-    test_path = path2.get().replace('u\'','').replace('\'','')
     global test_list
-    test_path = test_path[1:-1]
-    test_list = test_path.split(', ')
-    if len(test_list) == 1:
-        temp = test_list[0]
-        temp = temp[0:-1]
-        test_list[0] = temp
+    if str(path).find("(") >= 0:
+        test_path = path2.get().replace('u\'','').replace('\'','')
+        test_path = test_path[1:-1]
+        test_list = test_path.split(', ')
+        if len(test_list) == 1:
+            temp = test_list[0]
+            temp = temp[0:-1]
+            test_list[0] = temp
+    else:
+        test_list = str(path).split(' ')    
     tkMessageBox.showinfo(title='提示框', message='测试文件选择完成')
     # for i in range(0,len(test_list)):
     #     if i < len(test_list) or i ==len(test_list):
