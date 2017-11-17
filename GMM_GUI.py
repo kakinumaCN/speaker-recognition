@@ -400,6 +400,7 @@ def selectPath1():
     path = tkFileDialog.askopenfilenames()
     path1.set(path)
     global train_list
+    if str(path).find("(") >= 0:
         train_path = path1.get().replace('u\'','').replace('\'','')
         train_path = train_path[1:-1]
         train_list = train_path.split(', ')
