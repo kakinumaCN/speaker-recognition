@@ -63,7 +63,7 @@ def train_GMM_N(speaker_list, model_path, dtype):
             train_mfcc_features[i] = np.vstack((train_mfcc_features[i], feature))
 
         # speaker_gmm[i] = GMM(n_components=4, n_iter=200,covariance_type='diag', n_init=3)
-        speaker_gmm[i] = GaussianMixture(n_components=3, max_iter=200,covariance_type='diag', n_init=3)
+        speaker_gmm[i] = GaussianMixture(n_components=32, max_iter=200,covariance_type='diag', n_init=3)
         speaker_gmm[i].fit(train_mfcc_features[i])
         print speaker_list[i].split('/')[len(speaker_list[i].split('/'))-1].split('.')[0]
         pickle.dump(speaker_gmm[i], open(os.path.join(model_path, speaker_list[i].split('/')[len(speaker_list[i].split('/'))-1].split('.')[0]+'.gmm'), 'w'))    
@@ -223,6 +223,7 @@ def test_GMM_N(file_list, model_path, dtype):
     reportJson['resultList'] = resultList
     for file in file_list:
         # print file
+        print '1'
         f = wave.open(file, 'rb')
         frame_rate, n_frames = f.getframerate(), f.getnframes()
         audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
@@ -264,13 +265,13 @@ def test_GMM_N(file_list, model_path, dtype):
         loglikeArray = np.array(loglike)
         minloglike = np.argsort(-loglikeArray)[0:3]
         
-        print minloglike
+        # print minloglike
 
         arraya = []
         arrayb = []
         arrayc = []
         for i in range(0,3):
-            print minloglike[i]
+            # print minloglike[i]
             arraya.append(loglike[minloglike[i]])
             arrayb.append(gmm_files[minloglike[i]])
             arrayc.append(models[minloglike[i]])
@@ -280,7 +281,9 @@ def test_GMM_N(file_list, model_path, dtype):
         # print nploglike[minloglike[0:5]]
         # fileJson['modelList'] = gmm_files[minloglike]
         arrayd = []
+        print '2'
         for i in range(len(arrayc)):
+            print 'i' + str(i)
                 #11.1
                 # scores = np.array(models[i].score(feature))
                 # log_likelihood[i] = scores.sum()
@@ -292,8 +295,10 @@ def test_GMM_N(file_list, model_path, dtype):
                 # print 'log-weight:'
                 # print models[i]._estimate_log_weights()
             pwilist = []
+            
             if len(arrayc[i]._estimate_weighted_log_prob(feature)) > 1300:
-                for m in range(500,1300): 
+                for m in range(500,1300):
+                    print 'm' + str(m)
                 # for m in range(0,len(arrayc[i]._estimate_weighted_log_prob(feature))):
                     # print m
                     #each sample
@@ -335,7 +340,7 @@ def test_GMM_N(file_list, model_path, dtype):
                             pass
                     pwilist.append(pwi)
             
-            print pwilist
+            # print pwilist
             pwilistArray = np.array(pwilist)
             temppwilistArray = np.argsort(-pwilistArray)[0:10]
             ad = 0
@@ -344,14 +349,14 @@ def test_GMM_N(file_list, model_path, dtype):
             arrayd.append(ad/len(pwilist))
         fileJson['pwiMatrix'] = arrayd
 
-
+        print '3'
         resultList.append(fileJson)
         reportFile = codecs.open('gmm_report.json', 'w', 'utf-8')
         json.dump(reportJson,reportFile)
-        print 'update json file'
+        # print 'update json file'
         # print fileJson
     # json.dump(reportJson,reportFile)
-        print reportJson
+        # print reportJson
 
     print '正确个数'+str(acc)
     print len(file_list)
