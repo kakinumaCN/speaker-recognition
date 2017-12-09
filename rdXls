@@ -1,0 +1,54 @@
+import xlrd
+import codecs
+import json
+
+xls = xlrd.open_workbook('table.xlsx')
+table = xls.sheet_by_index(1)
+f = codecs.open('table.json', 'w', 'utf-8')
+j = {'zhuceList':[],'shibieList':[]}
+
+for i in range(1,table.nrows-2):
+    # print table.row_values(i)[2] +' -> '+ table.row_values(i)[4]
+    j['zhuceList'].append(table.row_values(i)[2])
+    j['shibieList'].append(table.row_values(i)[4])
+json.dump(j,f)
+
+f = codecs.open('table.json', 'r', 'utf-8')
+j = json.load(f)
+table_Dic = {}
+for index, s in enumerate(j['shibieList']):
+    table_Dic[s.split('.')[0]] = j['zhuceList'][index].split('.')[0]
+# print table_Dic
+
+f = codecs.open('gmm_report_likehood.json', 'r', 'utf-8')
+j = json.load(f)
+result_Dic = {}
+for r in j['resultList']:
+    rank = []
+    for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
+    result_Dic[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
+# print result_Dic
+
+f = codecs.open('gmm_report_likehood11.json', 'r', 'utf-8')
+j = json.load(f)
+result_Dic_after = {}
+for r in j['resultList']:
+    rank = []
+    for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
+    result_Dic_after[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
+# print result_Dic
+
+cor = 0
+for k in result_Dic.keys():
+    a=r='no'
+    if result_Dic[k][0] == table_Dic[k]:
+        r = 'yes'
+    if result_Dic_after[k][0] == table_Dic[k]:
+        a = 'yes'
+    print k +' - '+r+' ' +a+' should be '+table_Dic[k]
+# for i in range(1,table.nrows-2):
+#     if table.row_values(i)[6] == 1:
+#         if not result_Dic[table.row_values(i)[4].split('.')[0]][0] == table_Dic[table.row_values(i)[4].split('.')[0]]:
+#             print table.row_values(i)[4].split('.')[0]
+#             cor = cor+1
+# print cor
