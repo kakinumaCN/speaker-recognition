@@ -2,53 +2,125 @@ import xlrd
 import codecs
 import json
 
-xls = xlrd.open_workbook('table.xlsx')
-table = xls.sheet_by_index(1)
-f = codecs.open('table.json', 'w', 'utf-8')
-j = {'zhuceList':[],'shibieList':[]}
+# xls = xlrd.open_workbook('table.xlsx')
+# table = xls.sheet_by_index(1)
+# f = codecs.open('table.json', 'w', 'utf-8')
+# j = {'zhuceList':[],'shibieList':[]}
 
-for i in range(1,table.nrows-2):
-    # print table.row_values(i)[2] +' -> '+ table.row_values(i)[4]
-    j['zhuceList'].append(table.row_values(i)[2])
-    j['shibieList'].append(table.row_values(i)[4])
-json.dump(j,f)
+# for i in range(1,table.nrows-2):
+#     # print table.row_values(i)[2] +' -> '+ table.row_values(i)[4]
+#     j['zhuceList'].append(table.row_values(i)[2])
+#     j['shibieList'].append(table.row_values(i)[4])
+# json.dump(j,f)
 
-f = codecs.open('table.json', 'r', 'utf-8')
+f = codecs.open('log/table.json', 'r', 'utf-8')
 j = json.load(f)
 table_Dic = {}
 for index, s in enumerate(j['shibieList']):
     table_Dic[s.split('.')[0]] = j['zhuceList'][index].split('.')[0]
 # print table_Dic
 
-f = codecs.open('gmm_report_likehood.json', 'r', 'utf-8')
-j = json.load(f)
-result_Dic = {}
-for r in j['resultList']:
-    rank = []
-    for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
-    result_Dic[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
+# f = codecs.open('models1/before.json', 'r', 'utf-8')
+# j = json.load(f)
+# result_Dic = {}
+# for r in j['resultList']:
+#     rank = []
+#     for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
+#     result_Dic[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
 # print result_Dic
 
-f = codecs.open('gmm_report_likehood11.json', 'r', 'utf-8')
-j = json.load(f)
-result_Dic_after = {}
-for r in j['resultList']:
-    rank = []
-    for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
-    result_Dic_after[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
+# f = codecs.open('models1/before.json', 'r', 'utf-8')
+# j = json.load(f)
+# result_Dic1 = {}
+# for r in j['resultList']:
+#     rank = []
+#     for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
+#     result_Dic1[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
+# print result_Dic_after
+
+# f = codecs.open('models1/after.json', 'r', 'utf-8')
+# j = json.load(f)
+# result_Dic2 = {}
+# for r in j['resultList']:
+#     rank = []
+#     for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
+#     result_Dic2[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
+# print result_Dic_after
+
+f = codecs.open('log/ugmm_log', 'r')
+import re
+content = f.read()
+pattern = re.compile('(.*?) -> (.*?)\n', re.S)
+items = re.findall(pattern, content)
+result_Dic = {}
+for i in items:
+    result_Dic[i[0].split('/')[len(i[0].split('/'))-1].split('.')[0]] = i[1]
 # print result_Dic
+
+result_Dic = []
+for i in range(1,6):
+    f = codecs.open('j/'+str(i)+'.json', 'r', 'utf-8')
+    j = json.load(f)
+    result = {}
+    for r in j['resultList']:
+        rank = []
+        for m in r['modelList']:rank.append(m.split('/')[len(m.split('/'))-1].split('.')[0]) 
+        result[r['testFilename'].split('/')[len(r['testFilename'].split('/'))-1].split('.')[0]] = rank
+    result_Dic.append(result)
 
 cor = 0
-for k in result_Dic.keys():
-    a=r='no'
-    if result_Dic[k][0] == table_Dic[k]:
-        r = 'yes'
-    if result_Dic_after[k][0] == table_Dic[k]:
-        a = 'yes'
-    print k +' - '+r+' ' +a+' should be '+table_Dic[k]
+# for k in result_Dic.keys():
+#     a=r='no'
+#     if result_Dic[k][0] == table_Dic[k]:
+#         r = 'yes'
+#     if result_Dic_after[k][0] == table_Dic[k]:
+#         a = 'yes'
+#     if not a == r:
+#         print k +' - '+r+' ' +a+' should be '+table_Dic[k]
+
 # for i in range(1,table.nrows-2):
 #     if table.row_values(i)[6] == 1:
 #         if not result_Dic[table.row_values(i)[4].split('.')[0]][0] == table_Dic[table.row_values(i)[4].split('.')[0]]:
 #             print table.row_values(i)[4].split('.')[0]
 #             cor = cor+1
-# print cor
+
+# for k in result_Dic.keys():
+#     if result_Dic[k][2] == table_Dic[k]:
+#         cor+=1
+    # else:
+        # print k,result_Dic[k],table_Dic[k]
+
+# print '1after | 0after | 0before'
+
+def exsits(L,result):
+    a=0
+    for l in L:
+        if l == result:
+            a+=1
+    if a>0:
+        return 1
+    else:
+        return 0
+
+for k in table_Dic.keys():
+    # print k,table_Dic[k],result_Dic[k][0],result_Dic1[k][0],result_Dic2[k][0]
+    # # a=b=0
+    # if result_Dic1[k][0] == result_Dic1[k][0]:
+    #     # a=1
+    #     # print result_Dic[k][0],result_Dic1[k][0]
+    # if table_Dic[k] == result_Dic2[k][0]:
+    # if k == result_Dic[k]:
+    #     cor += 1
+    # # if not a==b:
+    #     # cor += 1
+    #     # print result_Dic[k][0],result_Dic1[k][0]
+    # # else:
+    # #     print k,result_Dic[k],table_Dic[k]
+    # print table_Dic[k],'|||||'
+    L = []
+    for i in range(0,5):
+        print result_Dic[i][k][0]
+        
+print cor
+162,32,15
+162,30,16
