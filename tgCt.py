@@ -5,6 +5,29 @@ import re
 import wave
 import numpy as np
 
+def SplitByTime(filePath,startTime,endTime,savePath):
+    f = wave.open(filePath,"rb")  
+    params = f.getparams()  
+    nchannels, sampwidth, framerate, nframes = params[:4]
+    str_data  = f.readframes(nframes)  
+    f.close()
+
+    wave_data = np.fromstring(str_data,dtype = np.short)  
+    wave_data.shape = -1,1  
+    wave_data = wave_data.T  
+
+    f_name = '1'
+    f_min = float(startTime)*framerate
+    f_max = float(endTime)*framerate
+    temp_data = wave_data[:,int(f_min):int(f_max)]
+
+    f = wave.open(savePath, "wb")
+    f.setnchannels(nchannels)
+    f.setsampwidth(sampwidth)
+    f.setframerate(framerate)
+    f.writeframes(temp_data.tostring())
+    f.close()  
+
 if __name__ == '__main__':
 
     data_path = 'data1/'
