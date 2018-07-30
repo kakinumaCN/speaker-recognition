@@ -78,5 +78,9 @@ def test_GMM_N(data_path, model_path, dtype):
 
 
 if __name__ == '__main__':
-    train_GMM_N('./train_data', './models', np.int16)
+    # train_GMM_N('./train_data', './models', np.int16)
     # test_GMM_N('./test_data', './models', np.int16)
+    if sys.argv[1] == 'train':
+        train_GMM_N('./train_data', './models', np.int16)
+    elif sys.argv[1] == 'train':
+        test_GMM_N('./test_data', './models', np.int16)
