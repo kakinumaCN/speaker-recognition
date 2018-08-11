@@ -59,6 +59,7 @@ def train_GMM_path(data_path, model_path, dtype):
 
     for i in range(N):
         file_list = [f for f in os.listdir(os.path.join(data_path,speaker_list[i])) if f.endswith('.wav')]
+        fitcount = 300
         for file in file_list:
             f = wave.open(os.path.join(data_path,speaker_list[i],file), 'rb')
             print speaker_list[i],file
@@ -72,6 +73,10 @@ def train_GMM_path(data_path, model_path, dtype):
             else:
                 train_mfcc_features[i] = np.vstack((train_mfcc_features[i], feature))
                 print 'add feature' ,feature.shape, train_mfcc_features[i].shape
+                fitcount -= 1
+            
+            if fitcount < 0:
+                break
 
         # speaker_gmm[i] = GMM(n_components=8, n_iter=200, covariance_type='diag', n_init=3)
         speaker_gmm[i] = GaussianMixture(n_components=32, max_iter=200,covariance_type='diag', n_init=3)
