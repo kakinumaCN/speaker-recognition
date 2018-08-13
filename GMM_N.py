@@ -59,7 +59,7 @@ def train_GMM_path(data_path, model_path, dtype):
 
     for i in range(N):
         file_list = [f for f in os.listdir(os.path.join(data_path,speaker_list[i])) if f.endswith('.wav')]
-        fitcount = 300
+        fitcount = 300 # 300
         for file in file_list:
             f = wave.open(os.path.join(data_path,speaker_list[i],file), 'rb')
             print speaker_list[i],file
@@ -73,10 +73,10 @@ def train_GMM_path(data_path, model_path, dtype):
             else:
                 train_mfcc_features[i] = np.vstack((train_mfcc_features[i], feature))
                 print 'add feature' ,feature.shape, train_mfcc_features[i].shape
-                fitcount -= 1
+                fitcount -= 1 #300
             
-            if fitcount < 0:
-                break
+            if fitcount < 0: #300
+                break #300
 
         # speaker_gmm[i] = GMM(n_components=8, n_iter=200, covariance_type='diag', n_init=3)
         speaker_gmm[i] = GaussianMixture(n_components=32, max_iter=200,covariance_type='diag', n_init=3)
@@ -91,7 +91,42 @@ def test_GMM(data_path, model_path, dtype):
     #   └ ...
     gmm_files = [os.path.join(model_path, f) for f in os.listdir(model_path) if f.endswith('.gmm')]
     models = [pickle.load(open(f, 'r')) for f in gmm_files]
+
     file_list = [os.path.join(data_path, f) for f in os.listdir(data_path) if f.endswith('.wav')]
+    result = []
+    count = 0
+    for file in file_list:
+        f = wave.open(file, 'rb')
+        frame_rate, n_frames = f.getframerate(), f.getnframes()
+        audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
+        feature = get_MFCC(frame_rate, audio)
+        log_likelihood = np.zeros(len(models))
+        for i in range(len(models)):
+            scores = np.array(models[i].score(feature))
+            log_likelihood[i] = scores.sum()
+        print file, gmm_files[np.argmax(log_likelihood)]
+        # count
+        if file.split('/')[2].split('.')[0] ==  gmm_files[np.argmax(log_likelihood)].split('/')[2].split('.')[0] :
+            count = count + 1
+        print count
+
+def test_GMM_path(data_path, model_path, dtype):
+    # - test_data
+    #   ├ a
+    #     ├ 400.wav
+    #     └ ...
+    #   ├ b
+    #     ├ 400.wav
+    #     └ ...
+    #   └ ...
+    gmm_files = [os.path.join(model_path, f) for f in os.listdir(model_path) if f.endswith('.gmm')]
+    models = [pickle.load(open(f, 'r')) for f in gmm_files]
+    speaker_list = [os.path.join(data_path, f) for f in os.listdir(data_path) if not f.startswith('.')]
+    file_list = []
+    for s in speaker_list:
+        f = [os.path.join(s, file) for file in os.listdir(s) if file.endswith('.wav')]
+        file_list.extend(f)
+        # TODO 302 ~ 500
     result = []
     count = 0
     for file in file_list:
@@ -112,12 +147,14 @@ def test_GMM(data_path, model_path, dtype):
 if __name__ == '__main__':
     TRAINPATH = '../train_data'
     TRAINPATH2 = '/Volumes/Storage/IOS/data/wav/C1_110'
+    TRAINPATH3 = '/Volumes/Storage/IOS/data/wav/D1_100'
     TESTPATH = '../test_data'
+    TESTPATH2 = '/Volumes/Storage/IOS/data/wav/C1_110'
     MODELPATH = '../models'
     opts, args = getopt.getopt(sys.argv[1:],'',['train','test'])
     for opt, arg in opts:
         if opt in ('--train'):
             # train_GMM(TRAINPATH, MODELPATH, np.int16)
-            train_GMM_path(TRAINPATH2, MODELPATH, np.int16)
+            train_GMM_path(TRAINPATH3, MODELPATH, np.int16)
         elif opt in ('--test'):
-            test_GMM(TESTPATH, MODELPATH, np.int16)
+            test_GMM_path(TESTPATH2, MODELPATH, np.int16)
