@@ -125,10 +125,10 @@ def test_GMM_path(data_path, model_path, dtype):
     file_list = []
     for s in speaker_list:
         f = [os.path.join(s, file) for file in os.listdir(s) if file.endswith('.wav')]
-        file_list.extend(f)
-        # TODO 302 ~ 500
+        file_list.extend(f[305:])
     result = []
     count = 0
+    xcount = 0
     for file in file_list:
         f = wave.open(file, 'rb')
         frame_rate, n_frames = f.getframerate(), f.getnframes()
@@ -140,21 +140,25 @@ def test_GMM_path(data_path, model_path, dtype):
             log_likelihood[i] = scores.sum()
         print file, gmm_files[np.argmax(log_likelihood)]
         # count
-        if file.split('/')[2].split('.')[0] ==  gmm_files[np.argmax(log_likelihood)].split('/')[2].split('.')[0] :
+        # if file.split('/')[2].split('.')[0] ==  gmm_files[np.argmax(log_likelihood)].split('/')[2].split('.')[0] :
+        #     count = count + 1
+        # print count
+        # cout /Volumes/Storage/IOS/data/wav/C1_110/C0001/IC0001W0480.wav ../models/C0001.gmm
+        if file.split('/')[7] ==  gmm_files[np.argmax(log_likelihood)].split('/')[2].split('.')[0] :
             count = count + 1
-        print count
+        xcount += 1
+        print str(count)+'/'+str(xcount)
 
 if __name__ == '__main__':
     TRAINPATH = '../train_data'
-    TRAINPATH2 = '/Volumes/Storage/IOS/data/wav/C1_110'
-    TRAINPATH3 = '/Volumes/Storage/IOS/data/wav/D1_100'
+    PATH2 = '/Volumes/Storage/IOS/data/wav/C111_200'
+    PATH3 = '/Volumes/Storage/IOS/data/wav/C201_300'
     TESTPATH = '../test_data'
-    TESTPATH2 = '/Volumes/Storage/IOS/data/wav/C1_110'
     MODELPATH = '../models'
     opts, args = getopt.getopt(sys.argv[1:],'',['train','test'])
     for opt, arg in opts:
         if opt in ('--train'):
             # train_GMM(TRAINPATH, MODELPATH, np.int16)
-            train_GMM_path(TRAINPATH3, MODELPATH, np.int16)
+            train_GMM_path(PATH3, MODELPATH, np.int16)
         elif opt in ('--test'):
-            test_GMM_path(TESTPATH2, MODELPATH, np.int16)
+            test_GMM_path(PATH3, MODELPATH, np.int16)
