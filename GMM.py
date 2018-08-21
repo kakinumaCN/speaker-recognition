@@ -152,7 +152,7 @@ def test_GMM_path(data_path, model_path, dtype):
 if __name__ == '__main__':
     TRAINPATH = '../train_data'
     PATH2 = '/Volumes/Storage/IOS/data/wav/C111_200'
-    PATH3 = '/Volumes/Storage/IOS/data/wav/C201_300'
+    PATH3 = '/Volumes/Storage/IOS/data/wav/D101_200'
     TESTPATH = '../test_data'
     MODELPATH = '../models'
     opts, args = getopt.getopt(sys.argv[1:],'',['train','test'])
