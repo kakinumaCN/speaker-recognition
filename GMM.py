@@ -59,27 +59,27 @@ def train_GMM_path(data_path, model_path, dtype):
 
     for i in range(N):
         file_list = [f for f in os.listdir(os.path.join(data_path,speaker_list[i])) if f.endswith('.wav')]
-        fitcount = 300 # 300
+        fitcount = 400 # 300
         for file in file_list:
             f = wave.open(os.path.join(data_path,speaker_list[i],file), 'rb')
-            print speaker_list[i],file
+            # print speaker_list[i],file
             frame_rate, n_frames = f.getframerate(), f.getnframes()
             audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
 
             feature = get_MFCC(frame_rate, audio)
             if train_mfcc_features[i].size == 0:
                 train_mfcc_features[i] = feature
-                print 'new feature' ,train_mfcc_features[i].shape 
+                # print 'new feature' ,train_mfcc_features[i].shape 
             else:
                 train_mfcc_features[i] = np.vstack((train_mfcc_features[i], feature))
-                print 'add feature' ,feature.shape, train_mfcc_features[i].shape
-                fitcount -= 1 #300
-            
-            if fitcount < 0: #300
+                # print 'add feature' ,feature.shape, train_mfcc_features[i].shape
+                
+            fitcount -= 1 #300
+            if fitcount < 1: #300
                 break #300
 
         # speaker_gmm[i] = GMM(n_components=8, n_iter=200, covariance_type='diag', n_init=3)
-        speaker_gmm[i] = GaussianMixture(n_components=32, max_iter=200,covariance_type='diag', n_init=3)
+        speaker_gmm[i] = GaussianMixture(n_components=50, max_iter=200,covariance_type='diag', n_init=3)
         speaker_gmm[i].fit(train_mfcc_features[i])
         print 'fit' + speaker_list[i]
         pickle.dump(speaker_gmm[i], open(os.path.join(model_path, speaker_list[i]+'.gmm'), 'w'))   
@@ -150,15 +150,18 @@ def test_GMM_path(data_path, model_path, dtype):
         print str(count)+'/'+str(xcount)
 
 if __name__ == '__main__':
-    TRAINPATH = '../train_data'
-    PATH2 = '/Volumes/Storage/IOS/data/wav/C111_200'
-    PATH3 = '/Volumes/Storage/IOS/data/wav/D101_200'
+    # PATH = ''
+    # PATH = ['/Volumes/Storage/IOS/data/wav/D1_100','/Volumes/Storage/IOS/data/wav/D101_200']
+    PATH1 = '/Volumes/Elements/IOS/data/wav/'
+    PATH = [PATH1 + p for p in os.listdir(PATH1) if p.startswith('D') and not p.startswith('D1_') and not p.startswith('D101_')]
+    print PATH
     TESTPATH = '../test_data'
     MODELPATH = '../models'
     opts, args = getopt.getopt(sys.argv[1:],'',['train','test'])
     for opt, arg in opts:
         if opt in ('--train'):
-            # train_GMM(TRAINPATH, MODELPATH, np.int16)
-            train_GMM_path(PATH3, MODELPATH, np.int16)
+            for P in PATH:
+                train_GMM_path(P, MODELPATH, np.int16)
         elif opt in ('--test'):
-            test_GMM_path(PATH3, MODELPATH, np.int16)
+            for P in PATH:
+                test_GMM_path(P, MODELPATH, np.int16)
