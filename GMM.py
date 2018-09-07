@@ -12,9 +12,14 @@ from python_speech_features import mfcc
 # from sklearn.mixture import GMM
 from sklearn.mixture import GaussianMixture
 from sklearn import preprocessing
+from python_speech_features import delta
 
 def get_MFCC(sr, audio):
-    return preprocessing.scale(mfcc(audio, sr,  appendEnergy=False))
+    # return preprocessing.scale(mfcc(audio, sr,  appendEnergy=False))
+    processed_audio = preprocessing.scale(mfcc(audio, sr,  appendEnergy=False))
+    delta1 = delta(processed_audio, 1)
+    delta2 = delta(processed_audio, 2)
+    return np.vstack((processed_audio,delta1,delta2))
 
 def train_GMM(data_path, model_path, dtype):
     # - train_data
@@ -65,7 +70,7 @@ def train_GMM_path(data_path, model_path, dtype):
             # print speaker_list[i],file
             frame_rate, n_frames = f.getframerate(), f.getnframes()
             audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
-
+            
             feature = get_MFCC(frame_rate, audio)
             if train_mfcc_features[i].size == 0:
                 train_mfcc_features[i] = feature
@@ -79,7 +84,7 @@ def train_GMM_path(data_path, model_path, dtype):
                 break #300
 
         # speaker_gmm[i] = GMM(n_components=8, n_iter=200, covariance_type='diag', n_init=3)
-        speaker_gmm[i] = GaussianMixture(n_components=50, max_iter=200,covariance_type='diag', n_init=3)
+        speaker_gmm[i] = GaussianMixture(n_components=32, max_iter=200,covariance_type='diag', n_init=3)
         speaker_gmm[i].fit(train_mfcc_features[i])
         print 'fit' + speaker_list[i]
         pickle.dump(speaker_gmm[i], open(os.path.join(model_path, speaker_list[i]+'.gmm'), 'w'))   
@@ -150,14 +155,16 @@ def test_GMM_path(data_path, model_path, dtype):
         print str(count)+'/'+str(xcount)
 
 if __name__ == '__main__':
-    # PATH = ''
-    # PATH = ['/Volumes/Storage/IOS/data/wav/D1_100','/Volumes/Storage/IOS/data/wav/D101_200']
-    PATH1 = '/Volumes/Elements/IOS/data/wav/'
-    PATH = [PATH1 + p for p in os.listdir(PATH1) if p.startswith('D') and not p.startswith('D1_') and not p.startswith('D101_')]
-    print PATH
+
     TESTPATH = '../test_data'
-    MODELPATH = '../models'
+    MODELPATH = '../models_39mfcc_64'
     opts, args = getopt.getopt(sys.argv[1:],'',['train','test'])
+
+    PATH = ''
+    PATH = ['/Volumes/Storage/IOS/data/wav/C1_110','/Volumes/Storage/IOS/data/wav/D1_100']
+
+    # PATH1 = '/Volumes/Elements/IOS/data/wav/'
+    # PATH = [PATH1 + p for p in os.listdir(PATH1) if p.startswith('D') and not p.startswith('D1_') and not p.startswith('D101_')]
     for opt, arg in opts:
         if opt in ('--train'):
             for P in PATH:
