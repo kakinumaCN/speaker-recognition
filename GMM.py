@@ -161,7 +161,7 @@ if __name__ == '__main__':
     opts, args = getopt.getopt(sys.argv[1:],'',['train','test'])
 
     PATH = ''
-    PATH = ['/Volumes/Storage/IOS/data/wav/C1_110','/Volumes/Storage/IOS/data/wav/D1_100']
+    PATH = ['/Volumes/Storage/IOS/data/wav/D1_100']
 
     # PATH1 = '/Volumes/Elements/IOS/data/wav/'
     # PATH = [PATH1 + p for p in os.listdir(PATH1) if p.startswith('D') and not p.startswith('D1_') and not p.startswith('D101_')]
