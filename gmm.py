@@ -163,21 +163,36 @@ def train_gmm_path(data_path, model_path, dtype):
 
 if __name__ == '__main__':
 
-    # DATAPATH = '/Volumes/Storage/IOS/data/wav/'
     DATAPATH = '../testpath'
-    MODELPATH = '../models_39mfcc_64'
+    MODELPATH = '../testmodel'
+    RUNTYPE = '2'
 
-    opts, args = getopt.getopt(sys.argv[1:], '', ['train', 'test'])
-
-    # PATH1 = [DATAPATH+'D1_100', DATAPATH+'1']
-    # PATH1 = [DATAPATH + p for p in os.listdir(PATH1) if p.startswith('D') and not p.startswith('D1_') \
-    # and not p.startswith('D101_')]
-
+    opts, args = getopt.getopt(sys.argv[1:], 'hd:m:t:', ['help','datapath=','modelpath=','runtype=','train', 'test'])
+    if len(opts) < 1:
+        print 'run \'python gmm.py --help\' for help'
     for opt, arg in opts:
-        if opt in '--train':
-            # for P in PATH1:
-            #     train_gmm_path(P, MODELPATH, np.int16)
-            train_gmm(DATAPATH, MODELPATH, np.int16)
+        if opt in ('-h', '--help'):
+            print 'usage: python gmm.py [-h|--help] [-d|--datapath <datapath>] [-m|--modelpath <modelpath>] [-t|--runtype 1|2] [--train] [--test]'
+            print 'arguments: choose runtype 1 to run train()\n           choose runtype 2 to run train_path()'
+            print 'default:'+' datapath:'+DATAPATH+' modelpath:'+MODELPATH+' runtype:'+RUNTYPE
+            print 'examples: python gmm.py -d ../persondata/ -m ../models/ -t 2 --train --test'
+        elif opt in ('-d', '--datapath'):
+            DATAPATH = arg
+        elif opt in ('-m', '--modelpath'):
+            MODELPATH = arg
+        elif opt in ('-t', '--runtype'):
+            RUNTYPE = arg
+        elif opt in '--train':
+            if RUNTYPE == '2':
+                PATH1 = [DATAPATH + p for p in os.listdir(DATAPATH) if p.startswith('D')]
+                for P in PATH1:
+                    train_gmm_path(P, MODELPATH, np.int16)
+            elif RUNTYPE == '1':
+                train_gmm(DATAPATH, MODELPATH, np.int16)
         elif opt in '--test':
-            for P in PATH1:
-                pass
+            if RUNTYPE == 2:
+                PATH1 = [DATAPATH + p for p in os.listdir(DATAPATH) if p.startswith('D')]
+                for P in PATH1:
+                    test_gmm_path(P, MODELPATH, np.int16)
+            elif RUNTYPE == 1:
+                test_gmm(DATAPATH, MODELPATH, np.int16)
