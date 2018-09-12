@@ -1,3 +1,4 @@
+# coding:utf-8
 import os
 import sys
 import getopt
@@ -19,7 +20,8 @@ def get_mfcc(sr, audio):
     processed_audio = preprocessing.scale(mfcc(audio, sr, appendEnergy=False))
     delta1 = delta(processed_audio, 1)
     delta2 = delta(processed_audio, 2)
-    return np.vstack((processed_audio, delta1, delta2))
+    ft = np.hstack((processed_audio, delta1, delta2))
+    return ft
 
 
 def train_gmm(data_path, model_path, dtype):
@@ -35,12 +37,12 @@ def train_gmm(data_path, model_path, dtype):
     speaker_gmm = [0 for i in range(n)]
 
     for i in range(n):
+        print 'fit'+speaker_list[i]
         f = wave.open(os.path.join(data_path, speaker_list[i] + '.wav'), 'rb')
         frame_rate, n_frames = f.getframerate(), f.getnframes()
         audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
 
         feature = get_mfcc(frame_rate, audio)
-        print n_frames, feature.shape, feature.size
         train_mfcc_features[i] = feature
 
         speaker_gmm[i] = GaussianMixture(n_components=32, max_iter=200, covariance_type='diag', n_init=3)
@@ -161,20 +163,21 @@ def train_gmm_path(data_path, model_path, dtype):
 
 if __name__ == '__main__':
 
-    DATAPATH = '/Volumes/Storage/IOS/data/wav/'
+    # DATAPATH = '/Volumes/Storage/IOS/data/wav/'
+    DATAPATH = '../testpath'
     MODELPATH = '../models_39mfcc_64'
 
     opts, args = getopt.getopt(sys.argv[1:], '', ['train', 'test'])
 
-    PATH1 = [DATAPATH+'D1_100', DATAPATH+'1']
+    # PATH1 = [DATAPATH+'D1_100', DATAPATH+'1']
     # PATH1 = [DATAPATH + p for p in os.listdir(PATH1) if p.startswith('D') and not p.startswith('D1_') \
     # and not p.startswith('D101_')]
 
     for opt, arg in opts:
         if opt in '--train':
-            for P in PATH1:
-                train_gmm_path(P, MODELPATH, np.int16)
+            # for P in PATH1:
+            #     train_gmm_path(P, MODELPATH, np.int16)
+            train_gmm(DATAPATH, MODELPATH, np.int16)
         elif opt in '--test':
             for P in PATH1:
-                # test_gmm_path(P, MODELPATH, np.int16)
                 pass
