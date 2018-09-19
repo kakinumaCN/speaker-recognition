@@ -127,17 +127,16 @@ def test_gmm_path(data_path, model_path, dtype):
     for s in speaker_list:
         f = [os.path.join(s, file) for file in os.listdir(s) if file.endswith('.wav')]
         f.sort(key = str.lower)
-        for file1 in f[402:]:
-            print file1
-            # f = wave.open(file1, 'rb')
-            # frame_rate, n_frames = f.getframerate(), f.getnframes()
-            # audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
-            # feature = get_mfcc(frame_rate, audio)
-            # log_likelihood = np.zeros(len(models))
-            # for i in range(len(models)):
-            #     scores = np.array(models[i].score(feature))
-            #     log_likelihood[i] = scores.sum()
-            # print file1, gmm_files[np.argmax(log_likelihood)]
+        for file1 in f[420:]:
+            f = wave.open(file1, 'rb')
+            frame_rate, n_frames = f.getframerate(), f.getnframes()
+            audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
+            feature = get_mfcc(frame_rate, audio)
+            log_likelihood = np.zeros(len(models))
+            for i in range(len(models)):
+                scores = np.array(models[i].score(feature))
+                log_likelihood[i] = scores.sum()
+            print file1, gmm_files[np.argmax(log_likelihood)]
 
 
 if __name__ == '__main__':
@@ -168,9 +167,7 @@ if __name__ == '__main__':
                 train_gmm(DATAPATH, MODELPATH, np.int16)
         elif opt in '--test':
             if RUNTYPE == '2':
-                PATH1 = [DATAPATH + p for p in os.listdir(DATAPATH)]
-                for P in PATH1:
-                    test_gmm_path(P, MODELPATH, np.int16)
+                test_gmm_path(DATAPATH, MODELPATH, np.int16)
             elif RUNTYPE == '1':
                 test_gmm(DATAPATH, MODELPATH, np.int16)
             else:
