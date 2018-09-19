@@ -124,20 +124,20 @@ def test_gmm_path(data_path, model_path, dtype):
     gmm_files = [os.path.join(model_path, f) for f in os.listdir(model_path) if f.endswith('.gmm')]
     models = [pickle.load(open(f, 'r')) for f in gmm_files]
     speaker_list = [os.path.join(data_path, f) for f in os.listdir(data_path) if not f.startswith('.')]
-    file_list = []
     for s in speaker_list:
         f = [os.path.join(s, file) for file in os.listdir(s) if file.endswith('.wav')]
-        file_list.extend(f[402:])
-    for file in file_list:
-        f = wave.open(file, 'rb')
-        frame_rate, n_frames = f.getframerate(), f.getnframes()
-        audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
-        feature = get_mfcc(frame_rate, audio)
-        log_likelihood = np.zeros(len(models))
-        for i in range(len(models)):
-            scores = np.array(models[i].score(feature))
-            log_likelihood[i] = scores.sum()
-        print file, gmm_files[np.argmax(log_likelihood)]
+        f.sort(key = str.lower)
+        for file1 in f[402:]:
+            print file1
+            # f = wave.open(file1, 'rb')
+            # frame_rate, n_frames = f.getframerate(), f.getnframes()
+            # audio = np.fromstring(f.readframes(n_frames), dtype=dtype)
+            # feature = get_mfcc(frame_rate, audio)
+            # log_likelihood = np.zeros(len(models))
+            # for i in range(len(models)):
+            #     scores = np.array(models[i].score(feature))
+            #     log_likelihood[i] = scores.sum()
+            # print file1, gmm_files[np.argmax(log_likelihood)]
 
 
 if __name__ == '__main__':
