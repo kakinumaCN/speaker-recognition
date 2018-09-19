@@ -65,6 +65,7 @@ def train_gmm_path(data_path, model_path, dtype):
 
     for i in range(n):
         file_list = [f for f in os.listdir(os.path.join(data_path, speaker_list[i])) if f.endswith('.wav')]
+        file_list.sort(key = str.lower)
         fitcount = 400
         for file1 in file_list:
             f = wave.open(os.path.join(data_path, speaker_list[i], file1), 'rb')
@@ -79,9 +80,9 @@ def train_gmm_path(data_path, model_path, dtype):
                 train_mfcc_features[i] = np.vstack((train_mfcc_features[i], feature))
 
             # for share database
-            print speaker_list[i]
+            print file1
             fitcount -= 1  # 300
-            if fitcount < 1:  # 300
+            if fitcount <= 2:  # 300
                 break  # 300
 
         # speaker_gmm[i] = GMM(n_components=8, n_iter=200, covariance_type='diag', n_init=3)
@@ -162,15 +163,15 @@ if __name__ == '__main__':
             RUNTYPE = arg
         elif opt in '--train':
             if RUNTYPE == '2':
-                PATH1 = [DATAPATH + p for p in os.listdir(DATAPATH) if p.startswith('D')]
-                for P in PATH1:
-                    train_gmm_path(P, MODELPATH, np.int16)
+                train_gmm_path(DATAPATH, MODELPATH, np.int16)
             elif RUNTYPE == '1':
                 train_gmm(DATAPATH, MODELPATH, np.int16)
         elif opt in '--test':
-            if RUNTYPE == 2:
-                PATH1 = [DATAPATH + p for p in os.listdir(DATAPATH) if p.startswith('D')]
+            if RUNTYPE == '2':
+                PATH1 = [DATAPATH + p for p in os.listdir(DATAPATH)]
                 for P in PATH1:
                     test_gmm_path(P, MODELPATH, np.int16)
-            elif RUNTYPE == 1:
+            elif RUNTYPE == '1':
                 test_gmm(DATAPATH, MODELPATH, np.int16)
+            else:
+                print '?'
